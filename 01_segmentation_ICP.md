@@ -1,6 +1,6 @@
 # Deliverable 1 — Segmentation map & Ideal Customer Profiles (working draft)
 
-> Status: **working draft, 11 Nov 2026**. Figures marked ✅ were checked against a source (see §8).
+> Status: **working draft, updated 13 Nov 2026**. Figures marked ✅ were checked against a source (see §8).
 > Figures marked ⚠️ are unverified or conflicting between sources: verify before they go on a slide.
 > Scores in §4 are **team hypotheses**, not data. They must be challenged by the team and, where possible, by the B2 pilot data.
 
@@ -46,7 +46,7 @@ We segment on **two levels**, because a single axis (e.g. "industry vertical") h
 | S3 | **Energy‑intensive, multi‑site industry** (chemicals, food, metals, paper, plastics…) | CFO / COO + Energy Manager; IT/OT for gateways | Production lines, compressors, chillers, PV + BESS on site, CHP | ✅ EED recast Art. 11: certified energy management system mandatory above **85 TJ/yr (≈ 23.6 GWh)** by **Oct 2027**; audit above 10 TJ (≈ 2.8 GWh) by Oct 2026 | ✅ EU ETS covers > 16,000 stationary installations (proxy for heavy sites; Germany alone: 1,794 in 2025). ⚠️ No count found of companies above 85 TJ |
 | S4 | **Commercial real estate portfolios** (offices, retail, logistics, hotels) | Asset / property manager, ESG lead | HVAC, lighting, PV, BESS, EV chargers | ✅ EPBD recast: building automation (BACS) mandatory in non‑residential buildings > **290 kW** HVAC (end 2024) and > **70 kW** (end 2029), "where feasible" | ⚠️ To size via national building stock data |
 | S5 | **Renewable energy communities (CER)** and their facilitators (municipalities, ESCOs, utilities) | Community manager / ESCO / municipality | Small PV, small BESS, smart meters | RED II/III energy-community rules; IT: DM 414/2023 incentives (until end 2027) + PNRR grants | ✅ Italy: GSE counts vary strongly by date/definition — 212 active (Mar 2025), 904 (Dec 2025), 3,630 configurations / 303 MW (Jun 2026), > 4,800 / ~400 MW (Aug 2026) ⚠️. PNRR grants: €1,014.5 M granted for 2.3 GW. **Average community ≈ 80 kW** → very small assets |
-| S6 | **Microgrids & closed sites** (ports, airports, industrial parks, campuses, islands) | Infrastructure / technical director | PV, BESS, gensets, shore power, EV, HVAC | Port electrification (shore power), resilience, grid-connection delays | ⚠️ To size |
+| S6 | **Microgrids & closed sites** (ports, airports, industrial parks, campuses, islands) | Infrastructure / technical director | PV, BESS, gensets, shore power, EV, HVAC | Port electrification (shore power), resilience, grid-connection delays | ✅ Live Sense Reply reference: **Aeroporti di Roma** (Fiumicino and Ciampino), IoT platform for airport asset monitoring and predictive maintenance (Oct 2026). ⚠️ Market size still to do |
 | S7 | **EV charge point operators & e‑fleet depots** | CTO / Head of Operations | Chargers, site BESS, PV | AFIR, smart-charging requirements | ⚠️ To size |
 | S8 | **BESS / PV owners, IPPs and equipment OEMs** (as customer *or* as channel) | Asset manager / OEM product lead | Utility-scale and C&I batteries, PV plants | Storage support schemes; flexibility markets | ✅ Europe installed **36 GWh** of batteries in 2025, fleet > 100 GWh, forecast 138 GWh/yr by 2030. C&I batteries: **4.7 GWh in 2025 (+77 %)** — mostly used for simple self-consumption / peak shaving |
 
@@ -72,9 +72,9 @@ We segment on **two levels**, because a single axis (e.g. "industry vertical") h
 | S1 DSOs | 5 | 5 | 4 | 1 | 5 | 5 | **4.25** |
 | S2 Aggregators / VPP | 4 | 4 | 4 | 4 | 4 | 5 | **4.10** |
 | S8 BESS/PV owners & OEMs | 4 | 3 | 3 | 4 | 2 | 5 | **3.45** |
+| S6 Infrastructure sites (airports, ports, microgrids) | 4 | 2 | 4 | 3 | 5 | 2 | **3.40** |
 | S3 Energy‑intensive industry | 3 | 4 | 4 | 3 | 3 | 3 | **3.35** |
 | S7 CPOs / e‑fleets | 3 | 3 | 3 | 3 | 3 | 4 | **3.10** |
-| S6 Microgrids / ports | 4 | 2 | 3 | 3 | 3 | 2 | **2.95** |
 | S4 Commercial real estate | 2 | 3 | 3 | 3 | 2 | 4 | **2.70** |
 | S5 Energy communities (direct) | 3 | 4 | 1 | 2 | 3 | 2 | **2.65** |
 
@@ -84,7 +84,9 @@ Formula: `score = 0.25·Fit + 0.20·Reg + 0.15·Pay + 0.15·Speed + 0.15·RightT
 
 - **Priority now — S2 aggregators/VPP**: high score *and* fast cycle; Sense Reply already has DR references → shortest path to first revenue.
 - **Strategic anchor — S1 DSOs**: best fit and biggest deals, but 18–36-month cycles and tenders. Start now, expect revenue later. Use existing Reply DSO relationships (Italy first).
+- **Opportunistic now — S6 infrastructure sites**: score revised from 2.95 to 3.40 on 13 Nov, after Sense Reply named Aeroporti di Roma as a reference (higher right to win, proven ability to pay). Few accounts, but each is large: replicate the airport case with other airports and ports.
 - **Second wave — S3 industry & S8 OEM channel**: EED 2027 deadline creates urgency for industry; OEMs can embed the platform and multiply gateways without a direct sales force.
+- **Price filter (13 Nov)**: Sense Reply sells 3-year contracts around €1M per year with a €200k minimum. Only large accounts can be direct clients. See `03_business_model.md`, §2.
 - **Deprioritise as direct targets — S4 real estate, S5 energy communities**: real estate is a crowded building-management market (Siemens, Schneider, Johnson Controls…); energy communities have tiny assets (~80 kW on average in Italy) and almost no software budget. **Serve energy communities as a *use case sold to* DSOs, utilities and ESCOs**, not as direct customers.
 
 > ⚠️ Where we disagree with the client's framing: the kickoff put DSOs **and** energy communities on the same level. The data does not support selling directly to energy communities; it supports reaching them through B2B2C partners.
