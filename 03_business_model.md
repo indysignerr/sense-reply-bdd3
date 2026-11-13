@@ -1,6 +1,6 @@
 # Deliverable 3 — Business model (working draft)
 
-> Status: **working draft, 13 Nov 2026**.
+> Status: **working draft, 13 Nov 2026**. The quantified client-side case is in `04_business_case.md`.
 > **Client facts** = what Sense Reply told the team. **Hypotheses** = ours, to confirm.
 > The numbers in §5 come from `03_revenue_scenarios.xlsx` (change the blue cells, everything recalculates).
 
@@ -30,15 +30,17 @@
 
 **b) The price filters the market.** A client paying €200k to €1M per year needs to get much more than that in value.
 
-Illustrative calculation (our assumptions: the client wants 3 times its money back, the platform saves 10 % of the energy bill, electricity at €100/MWh):
+Calculation updated on 13 Nov with sourced inputs (full model in `04_business_case.xlsx`). Assumptions: the client wants 3 times its money back (our hypothesis), the platform saves 5 % of electricity use (our hypothesis), Italian industrial electricity at about €200 per MWh (2025, sourced):
 
-| Yearly fee | Value needed (3×) | Energy bill needed (10 % savings) | Consumption needed |
+| Yearly fee | Value needed (3×) | Electricity bill needed (5 % savings) | Consumption needed |
 |---|---|---|---|
-| €200k (minimum) | €600k | €6M | ≈ 60 GWh per year |
-| €1M (full contract) | €3M | €30M | ≈ 300 GWh per year |
+| €200k (minimum) | €600k | €12M | ≈ 60 GWh per year |
+| €1M (full contract) | €3M | €60M | ≈ 300 GWh per year |
+
+For comparison, Rome Fiumicino airport uses about 150 GWh per year.
 
 Consequences:
-- **Energy savings alone rarely justify the price for a single site.** A factory at the EED threshold (23.6 GWh per year, about €2.4M of electricity) would save about €240k: barely the minimum fee.
+- **Energy savings alone rarely justify the price for a single site.** A factory at the EED threshold (23.6 GWh per year, about €4.7M of electricity) would save about €240k: barely the minimum fee.
 - The value must come from **several sources at once**: energy cost, flexibility revenue, avoided maintenance and downtime (the Rome airport case is about asset maintenance, not energy), avoided grid investment for DSOs, compliance.
 - **Direct targets are large accounts only**: DSOs, utilities and aggregators, large infrastructure (airports, ports), multi-site industrial groups. Energy communities and mid-size companies cannot be direct clients at this price. They need a partner channel or a lighter offer.
 
