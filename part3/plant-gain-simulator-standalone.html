@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Plant Gain Simulator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap">
+<style>
+/* Layout: a light, airy console. One input card on the left, results on the right; one column on a phone.
+   Single light look by choice: every colour is set explicitly. */
+:root {
+  --bg: #F5F8FA; --surface: #FFFFFF; --soft: #EEF3F6; --tint: #E6F4F2;
+  --ink: #17232E; --muted: #667482; --line: #E3E9EE;
+  --primary: #0B7F76; --primary-ink: #FFFFFF;
+  --c-solar: #E2A336; --c-shift: #1F9E8F; --c-flex: #4C86E0; --c-peak: #D9668A;
+  --c-proj: #4C86E0; --c-svc: #1F9E8F; --c-part: #E2A336;
+  --text: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --display: "Sora", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --r: 16px; --shadow: 0 1px 2px rgba(23, 35, 46, 0.04), 0 4px 16px rgba(23, 35, 46, 0.05);
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--text); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 24px; }
+h1 { font-family: var(--display); font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h3 { font-size: 13px; font-weight: 600; margin: 0; color: var(--muted); letter-spacing: 0.01em; }
+p { margin: 0; }
+.muted { color: var(--muted); } .small { font-size: 13px; }
+.n { font-variant-numeric: tabular-nums; }
+input { box-sizing: border-box; }
+
+.top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; }
+.top .id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; background: var(--soft); padding: 5px; border-radius: 999px; }
+.tabs button { font: inherit; font-weight: 600; font-size: 14px; color: var(--muted); background: transparent; border: 0; padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: background .2s, color .2s; }
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--primary); box-shadow: var(--shadow); }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.note { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: baseline; }
+.note::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--c-solar); flex: none; }
+
+.view { display: grid; grid-template-columns: minmax(0, 348px) minmax(0, 1fr); gap: 24px; align-items: start; animation: rise .28s ease-out; }
+@keyframes rise { from { opacity: 0.4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (max-width: 880px) { .view { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 24px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.group { display: flex; flex-direction: column; gap: 16px; }
+.group + .group { border-top: 1px solid var(--line); padding-top: 18px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.field label { font-size: 14px; font-weight: 500; min-width: 0; }
+.val { display: flex; align-items: center; gap: 6px; flex: none; }
+.val input { width: 78px; font: inherit; font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); text-align: right; transition: border-color .15s; }
+.val input:hover { border-color: #C5D0D9; }
+.val span { font-size: 12px; color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--primary); margin: 0; height: 20px; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.trio input { width: 100%; font: inherit; font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); text-align: center; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: var(--soft); padding: 4px; border-radius: 12px; }
+.seg label { text-align: center; font-size: 13px; font-weight: 600; padding: 8px 4px; border-radius: 9px; cursor: pointer; color: var(--muted); transition: background .2s, color .2s; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--surface); color: var(--primary); box-shadow: var(--shadow); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }
+details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--primary); }
+details .inner { display: flex; flex-direction: column; gap: 14px; padding-top: 14px; }
+.reset { font: inherit; font-size: 13px; font-weight: 600; color: var(--primary); background: var(--tint); border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; align-self: flex-start; }
+
+.hero { background: var(--surface); }
+.hero .lead { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.big { font-family: var(--display); font-size: 44px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.big .from { color: var(--muted); font-weight: 600; }
+.bar { display: flex; gap: 2px; height: 14px; }
+.bar span { display: block; min-width: 0; border-radius: 4px; flex: 0 1 0%; transition: flex-grow .35s ease; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px 32px; }
+.legend div { display: flex; gap: 10px; align-items: center; font-size: 14px; min-width: 0; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.legend b { font-weight: 600; margin-left: auto; font-variant-numeric: tabular-nums; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { background: var(--soft); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.stat span { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.stat span i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.stat b { font-family: var(--display); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.pill { align-self: flex-start; font-size: 13px; font-weight: 500; background: var(--tint); color: var(--ink); border-radius: 999px; padding: 6px 14px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; white-space: normal; padding-left: 0; }
+th:last-child, td:last-child { padding-right: 0; }
+thead th { font-size: 12px; font-weight: 600; color: var(--muted); }
+tr.total td { font-weight: 700; border-bottom: 0; }
+td.hl { color: var(--primary); font-weight: 600; }
+.terms { display: grid; grid-template-columns: minmax(110px, 180px) minmax(0, 1fr); margin: 0; }
+.terms dt, .terms dd { margin: 0; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.terms dt { font-weight: 600; font-size: 14px; padding-right: 14px; }
+.terms dt:nth-last-of-type(1), .terms dd:nth-last-of-type(1) { border-bottom: 0; }
+.chartbox { position: relative; }
+.chart { min-width: 520px; display: block; }
+.chart text { fill: var(--muted); font-family: var(--text); font-size: 12px; }
+.chart .tot { fill: var(--ink); font-weight: 600; font-size: 12.5px; }
+.chart .yr { fill: var(--ink); font-weight: 600; font-size: 13px; }
+.chart .grid { stroke: var(--line); }
+.chart rect { stroke: var(--surface); stroke-width: 2; transition: opacity .15s; }
+.chart rect:hover { opacity: 0.82; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: #FFFFFF; font-size: 12.5px; padding: 7px 10px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -130%); z-index: 2; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="id">
+      <h1>Plant Gain Simulator</h1>
+      <p class="small muted">Team prototype for the Sense Reply case, Albert School BDD #3. Not a Reply product.</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button role="tab" id="tab-plant" data-view="plant" aria-selected="true">Plant simulator</button>
+      <button role="tab" id="tab-pilot" data-view="pilot" aria-selected="false">Pilot contract</button>
+      <button role="tab" id="tab-reply" data-view="reply" aria-selected="false">Reply view</button>
+    </nav>
+  </header>
+  <p class="note">Every figure is an estimate. Reply guarantees no saving: the success bonus is paid only on savings measured on site.</p>
+
+  <!-- ================= VIEW 1 ================= -->
+  <section id="view-plant" class="view" role="tabpanel" aria-labelledby="tab-plant">
+    <div class="card">
+      <div class="group">
+        <h2>Your plant</h2>
+        <div class="field"><div class="head"><label for="cons-n">Electricity use</label><div class="val"><input type="number" id="cons-n" data-k="cons" min="0.5" max="100" step="0.5"><span>GWh / yr</span></div></div><input type="range" id="cons-r" data-k="cons" min="1" max="20" step="0.5" aria-label="Electricity use"></div>
+        <div class="field"><div class="head"><label for="price-n">Electricity price</label><div class="val"><input type="number" id="price-n" data-k="price" min="50" max="600" step="1"><span>€ / MWh</span></div></div><input type="range" id="price-r" data-k="price" min="100" max="400" step="1" aria-label="Electricity price"></div>
+        <div class="field"><div class="head"><label for="pv-n">Solar on the roof</label><div class="val"><input type="number" id="pv-n" data-k="pv" min="0" max="20" step="0.1"><span>MWp</span></div></div><input type="range" id="pv-r" data-k="pv" min="0" max="5" step="0.1" aria-label="Solar on the roof"></div>
+        <div class="field"><div class="head"><label for="exp-n">Solar sent to the grid today</label><div class="val"><input type="number" id="exp-n" data-k="expShare" data-scale="100" min="0" max="100" step="1"><span>%</span></div></div><input type="range" id="exp-r" data-k="expShare" data-scale="100" min="0" max="60" step="1" aria-label="Solar sent to the grid today"></div>
+        <div class="field"><div class="head"><label for="plants-n">Plants in the company</label><div class="val"><input type="number" id="plants-n" data-k="plants" min="1" max="30" step="1"><span>plants</span></div></div><input type="range" id="plants-r" data-k="plants" min="1" max="10" step="1" aria-label="Plants in the company"></div>
+      </div>
+      <div class="group">
+        <h3>How flexible is the plant?</h3>
+        <div class="seg" role="radiogroup" aria-label="Case">
+          <label><input type="radio" name="case" id="case-low" value="low">Cautious</label>
+          <label><input type="radio" name="case" id="case-base" value="base">Base</label>
+          <label><input type="radio" name="case" id="case-high" value="high">Optimistic</label>
+        </div>
+        <p class="small muted" id="case-note"></p>
+      </div>
+      <div class="group">
+        <h3>The offer</h3>
+        <div class="field"><div class="head"><label for="fee-n">Managed service fee</label><div class="val"><input type="number" id="fee-n" data-k="fee" min="0" max="100000" step="500"><span>€ / plant / yr</span></div></div><input type="range" id="fee-r" data-k="fee" min="4000" max="20000" step="500" aria-label="Managed service fee"></div>
+        <div class="field"><div class="head"><label for="bonus-n">Bonus on measured savings</label><div class="val"><input type="number" id="bonus-n" data-k="bonus" data-scale="100" min="0" max="100" step="1"><span>%</span></div></div><input type="range" id="bonus-r" data-k="bonus" data-scale="100" min="0" max="40" step="1" aria-label="Bonus on measured savings"></div>
+        <details>
+          <summary>More settings</summary>
+          <div class="inner">
+            <div class="field"><div class="head"><label for="setup1-n">Set-up of the first plant</label><div class="val"><input type="number" id="setup1-n" data-k="setup1" min="0" step="1000"><span>€</span></div></div></div>
+            <div class="field"><div class="head"><label for="setup2-n">Set-up of each further plant</label><div class="val"><input type="number" id="setup2-n" data-k="setup2" min="0" step="1000"><span>€</span></div></div></div>
+            <div class="field"><div class="head"><label for="pilot-n">Pilot fee, credited if you sign</label><div class="val"><input type="number" id="pilot-n" data-k="pilotFee" min="0" step="1000"><span>€</span></div></div></div>
+            <div class="field"><div class="head"><label for="expp-n">Price received for exported solar</label><div class="val"><input type="number" id="expp-n" data-k="expPrice" min="0" step="5"><span>€ / MWh</span></div></div></div>
+            <div class="field"><div class="head"><label for="yield-n">Solar output per MWp</label><div class="val"><input type="number" id="yield-n" data-k="yield" min="500" step="50"><span>MWh / yr</span></div></div></div>
+          </div>
+        </details>
+        <button class="reset" id="reset" type="button">Reset to the team's base case</button>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card hero">
+        <h3>What one plant gains per year</h3>
+        <div class="lead">
+          <div class="big n" id="o-tot"></div>
+          <p class="muted"><span class="n" id="o-pct"></span> of a <span class="n" id="o-bill"></span> electricity bill</p>
+        </div>
+        <div class="bar" id="o-bar" aria-hidden="true"></div>
+        <div class="legend" id="o-legend"></div>
+      </div>
+      <div class="card">
+        <h3>Where the money goes</h3>
+        <div class="bar" id="o-split" aria-hidden="true"></div>
+        <div class="stats">
+          <div class="stat"><span><i style="background:var(--c-svc)"></i>The plant keeps</span><b id="o-keep"></b></div>
+          <div class="stat"><span><i style="background:var(--c-proj)"></i>Paid to Reply</span><b id="o-rec"></b></div>
+          <div class="stat"><span>Reply's share of the gain</span><b id="o-share"></b></div>
+          <div class="stat"><span>Gain for each euro paid</span><b id="o-mult"></b></div>
+        </div>
+        <p class="pill" id="o-y1"></p>
+      </div>
+      <div class="card">
+        <h3>The company over three years, one more plant each year</h3>
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>Year 1</th><th>Year 2</th><th>Year 3</th><th>3 years</th></tr></thead>
+          <tbody id="o-plan"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= VIEW 2 ================= -->
+  <section id="view-pilot" class="view" role="tabpanel" aria-labelledby="tab-pilot" hidden>
+    <div class="stack">
+      <div class="card">
+        <h2>Why change the pilot</h2>
+        <p>Today the pilot is often free and nothing commits the client to continue. Here it is paid at cost, the targets are written down before it starts, and the fee comes back if the client signs.</p>
+        <p class="small muted">The figures follow the plant set in the simulator.</p>
+      </div>
+      <div class="card">
+        <h3>Targets agreed before the start</h3>
+        <div class="stats" id="p-kpis"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Conditional pilot on one page</h2>
+      <dl class="terms" id="p-terms"></dl>
+    </div>
+  </section>
+
+  <!-- ================= VIEW 3 ================= -->
+  <section id="view-reply" class="view" role="tabpanel" aria-labelledby="tab-reply" hidden>
+    <div class="card">
+      <div class="group">
+        <h2>Same sales effort</h2>
+        <div class="field"><label for="pil0">Pilots started, years 1 to 3</label><div class="trio"><input type="number" id="pil0" data-k="pilots" data-i="0" min="0" step="1" aria-label="Pilots started in year 1"><input type="number" id="pil1" data-k="pilots" data-i="1" min="0" step="1" aria-label="Pilots started in year 2"><input type="number" id="pil2" data-k="pilots" data-i="2" min="0" step="1" aria-label="Pilots started in year 3"></div></div>
+        <div class="field"><div class="head"><label for="co-n">Pilots that become contracts today</label><div class="val"><input type="number" id="co-n" data-k="convOld" data-scale="100" min="0" max="100" step="5"><span>%</span></div></div><input type="range" id="co-r" data-k="convOld" data-scale="100" min="0" max="100" step="5" aria-label="Pilots that become contracts today"></div>
+        <div class="field"><div class="head"><label for="cn-n">With a conditional pilot</label><div class="val"><input type="number" id="cn-n" data-k="convNew" data-scale="100" min="0" max="100" step="5"><span>%</span></div></div><input type="range" id="cn-r" data-k="convNew" data-scale="100" min="0" max="100" step="5" aria-label="Pilots that become contracts with a conditional pilot"></div>
+      </div>
+      <div class="group">
+        <h3>Partners</h3>
+        <div class="field"><label for="par0">Partners signed, years 1 to 3</label><div class="trio"><input type="number" id="par0" data-k="partners" data-i="0" min="0" step="1" aria-label="Partners signed in year 1"><input type="number" id="par1" data-k="partners" data-i="1" min="0" step="1" aria-label="Partners signed in year 2"><input type="number" id="par2" data-k="partners" data-i="2" min="0" step="1" aria-label="Partners signed in year 3"></div></div>
+        <div class="field"><div class="head"><label for="pp-n">Plants each partner adds per year</label><div class="val"><input type="number" id="pp-n" data-k="partnerPlants" min="0" step="5"><span>plants</span></div></div><input type="range" id="pp-r" data-k="partnerPlants" min="5" max="100" step="5" aria-label="Plants each partner adds per year"></div>
+        <div class="field"><div class="head"><label for="pf-n">White-label platform fee</label><div class="val"><input type="number" id="pf-n" data-k="partnerFee" min="0" step="500"><span>€ / plant / yr</span></div></div><input type="range" id="pf-r" data-k="partnerFee" min="1000" max="10000" step="500" aria-label="White-label platform fee"></div>
+      </div>
+      <div class="group">
+        <h3>Large groups</h3>
+        <div class="field"><div class="head"><label for="ci-n">Co-innovation project</label><div class="val"><input type="number" id="ci-n" data-k="coinnov" min="0" step="10000" style="width:96px"><span>€ / yr</span></div></div></div>
+        <p class="small muted">One large group signed each year, 10 plants each, in both models. Plant gain and prices come from the simulator.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card hero">
+        <h3>Revenue per person in year 3</h3>
+        <div class="lead">
+          <div class="big n"><span class="from" id="r-rpp-old"></span> → <span id="r-rpp-new"></span></div>
+          <p class="muted" id="r-rpp-note"></p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Revenue per year, today's way of selling against the two-speed model</h3>
+        <div class="scroll"><div class="chartbox"><svg class="chart" id="r-chart" viewBox="0 0 640 300" width="100%" role="img" aria-label="Revenue per year, today's model against the two-speed model"></svg><div class="tip" id="r-tip" hidden></div></div></div>
+        <div class="legend" id="r-legend"></div>
+      </div>
+      <div class="card">
+        <h3>Three years side by side</h3>
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>Today</th><th>Two-speed model</th></tr></thead>
+          <tbody id="r-table"></tbody>
+        </table></div>
+        <p class="small muted">Fixed assumptions: pilot 40 days today and 25 with packaged agents; 40 days per plant today, 15 with reuse; 5% of plants lost each year; 200 working days per person. All are team hypotheses.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var DEF = { cons: 5, price: 278, pv: 1, expShare: 0.20, plants: 3, caseName: "base",
+    fee: 10000, bonus: 0.15, setup1: 30000, setup2: 12000, pilotFee: 20000, expPrice: 100, yield: 1100,
+    pilots: [10, 16, 18], convOld: 0.30, convNew: 0.50, partners: [1, 2, 3], partnerPlants: 25, partnerFee: 4000, coinnov: 100000 };
+  var CASES = {
+    low:  { rec: 0.30, shift: 0.05, gap: 39, peakRed: 0.05, flexPerGWh: 20, note: "Cautious: 5% of consumption can be moved in time, and the price gap between hours is small." },
+    base: { rec: 0.50, shift: 0.10, gap: 60, peakRed: 0.10, flexPerGWh: 40, note: "Base: 10% of consumption can be moved in time, such as cold rooms, ovens and compressors." },
+    high: { rec: 0.70, shift: 0.15, gap: 88, peakRed: 0.15, flexPerGWh: 60, note: "Optimistic: 15% of consumption can be moved in time, and the price gap between hours is wide." } };
+  var FIX = { powCharge: 28.35, flexRev: 47000, flexKeep: 0.70, peakPerGWh: 200, churn: 0.05, light: [1, 1, 1], schTyp: [1, 2, 3], schLight: [2, 5, 10],
+    d: { pilotNew: 25, pilotOld: 40, first: 15, add: 15, siteOld: 40, runNew: 5, runOld: 8, partner: 30, psite: 1, coinnov: 150, year: 200 } };
+  var S = JSON.parse(JSON.stringify(DEF));
+
+  function plant(s) {
+    var c = CASES[s.caseName];
+    var prod = s.pv * s.yield, exp = prod * s.expShare, rec = exp * c.rec, shift = s.cons * 1000 * c.shift;
+    var g1 = rec * Math.max(0, s.price - s.expPrice);
+    var g2 = Math.max(0, shift - rec) * c.gap;
+    var g3 = s.cons * FIX.peakPerGWh * c.peakRed * FIX.powCharge;
+    var g4 = s.cons * c.flexPerGWh / 1000 * FIX.flexRev * FIX.flexKeep;
+    var tot = g1 + g2 + g3 + g4, bill = s.cons * 1000 * s.price;
+    var paid = s.fee + s.bonus * tot;
+    return { prod: prod, exp: exp, rec: rec, shift: shift, g: [g1, g2, g3, g4], tot: tot, bill: bill, paid: paid, bonus: s.bonus * tot, keep: tot - paid };
+  }
+  function account(s, p) {
+    var live = [1, 2, 3].map(function (k) { return Math.min(s.plants, k); }), rows = [], prev = 0;
+    live.forEach(function (n, i) {
+      var setup = i === 0 ? s.setup1 + s.setup2 * (n - 1) : s.setup2 * (n - prev);
+      rows.push({ live: n, gain: n * p.tot, paid: setup + n * p.paid, net: n * p.tot - setup - n * p.paid }); prev = n;
+    });
+    return rows;
+  }
+  function cohort(sig, sch) { return [sig[0] * sch[0], sig[0] * sch[1] + sig[1] * sch[0], sig[0] * sch[2] + sig[1] * sch[1] + sig[2] * sch[0]]; }
+  function diff(a) { return [a[0], a[1] - a[0], a[2] - a[1]]; }
+  function cum(a) { return [a[0], a[0] + a[1], a[0] + a[1] + a[2]]; }
+  function paying(live) { var c = FIX.churn, p0 = live[0], p1 = live[1] - c * p0; return [p0, p1, live[2] - c * p0 - c * p1]; }
+  function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+  function plan(s, p) {
+    var d = FIX.d, Y = [0, 1, 2], schPart = [s.partnerPlants, 2 * s.partnerPlants, 3 * s.partnerPlants];
+    var sig = s.pilots.map(function (x) { return x * s.convNew; }), live = cohort(sig, FIX.schTyp), nw = diff(live);
+    var add = Y.map(function (i) { return nw[i] - sig[i]; }), pay = paying(live);
+    var lsig = FIX.light, lcum = cum(lsig), llive = cohort(lsig, FIX.schLight), lnew = diff(llive);
+    var ppay = paying(cohort(s.partners, schPart));
+    var ours = Y.map(function (i) {
+      var proj = s.pilots[i] * (1 - s.convNew) * s.pilotFee + sig[i] * s.setup1 + add[i] * s.setup2 + lsig[i] * s.setup1 + (lnew[i] - lsig[i]) * s.setup2 + lcum[i] * s.coinnov;
+      var svc = (pay[i] + llive[i]) * p.paid, part = ppay[i] * s.partnerFee;
+      var days = s.pilots[i] * d.pilotNew + (sig[i] + lsig[i]) * d.first + (add[i] + lnew[i] - lsig[i]) * d.add + (pay[i] + llive[i]) * d.runNew + s.partners[i] * d.partner + ppay[i] * d.psite + lcum[i] * d.coinnov;
+      return { proj: proj, svc: svc, part: part, tot: proj + svc + part, rec: svc + part, people: days / d.year, sites: pay[i] + llive[i] + ppay[i] };
+    });
+    var osig = s.pilots.map(function (x) { return x * s.convOld; }), onew = osig.map(function (x) { return x * FIX.schTyp[2]; }), olive = cum(onew);
+    var today = Y.map(function (i) {
+      var proj = (onew[i] + lnew[i]) * s.setup1 + lcum[i] * s.coinnov, svc = (olive[i] + llive[i]) * s.fee;
+      var days = s.pilots[i] * d.pilotOld + (onew[i] + lnew[i]) * d.siteOld + (olive[i] + llive[i]) * d.runOld + lcum[i] * d.coinnov;
+      return { proj: proj, svc: svc, part: 0, tot: proj + svc, rec: svc, people: days / d.year, sites: olive[i] + llive[i] };
+    });
+    return { ours: ours, today: today, accOurs: sum(sig) + sum(lsig), accToday: sum(osig) + sum(lsig), freeDays: sum(s.pilots) * d.pilotOld };
+  }
+  window.__model = { plant: plant, plan: plan, DEF: DEF };
+
+  var eur = new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  function E(v) { return eur.format(Math.round(v)); }
+  function M(v) { return "€" + (v / 1e6).toFixed(1) + "M"; }
+  function K(v) { return "€" + Math.round(v / 1000) + "k"; }
+  function P(v, d) { return (v * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (ch) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]; }); }
+  var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function tween(el, to, fmt) {
+    var from = el._v; el._v = to;
+    if (calm || from === undefined || !isFinite(from) || !isFinite(to)) { el.textContent = fmt(to); return; }
+    var t0 = performance.now();
+    (function step(now) { var k = Math.min(1, (now - t0) / 260), e = 1 - Math.pow(1 - k, 3);
+      if (el._v !== to) return; el.textContent = fmt(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); })(t0);
+  }
+
+  function syncInputs() {
+    document.querySelectorAll("[data-k]").forEach(function (el) {
+      var k = el.dataset.k, v = S[k];
+      if (el.dataset.i !== undefined) v = v[+el.dataset.i];
+      if (el.dataset.scale) v = Math.round(v * el.dataset.scale * 100) / 100;
+      if (document.activeElement !== el) el.value = v;
+    });
+    document.querySelectorAll('input[name="case"]').forEach(function (r) { r.checked = r.value === S.caseName; });
+  }
+  function bars(el, parts) {
+    if (el.children.length !== parts.length) el.innerHTML = parts.map(function (p) { return '<span style="background:var(' + p[1] + ')"></span>'; }).join("");
+    parts.forEach(function (p, i) { el.children[i].style.flexGrow = Math.max(0, p[0]); el.children[i].hidden = p[0] <= 0; el.children[i].title = p[2] || ""; });
+  }
+
+  // fixed colour order: solar, shifting, flexibility, peaks (validated for colour-vision separation)
+  var LEV = [[0, "Using more of its own solar", "--c-solar"], [1, "Moving consumption to cheap hours", "--c-shift"], [3, "Selling flexibility through an aggregator", "--c-flex"], [2, "Lower peaks", "--c-peak"]];
+  function renderPlant(p) {
+    tween($("o-tot"), p.tot, E); $("o-pct").textContent = p.bill ? P(p.tot / p.bill) : "0%"; $("o-bill").textContent = E(p.bill);
+    bars($("o-bar"), LEV.map(function (l) { return [p.g[l[0]], l[2], l[1] + ": " + E(p.g[l[0]])]; }));
+    $("o-legend").innerHTML = LEV.map(function (l) { return '<div><i style="background:var(' + l[2] + ')"></i><span>' + l[1] + "</span><b>" + E(p.g[l[0]]) + "</b></div>"; }).join("");
+    bars($("o-split"), [[Math.max(0, p.keep), "--c-svc", "The plant keeps " + E(p.keep)], [p.paid, "--c-proj", "Paid to Reply " + E(p.paid)]]);
+    tween($("o-keep"), p.keep, E); tween($("o-rec"), p.paid, E);
+    $("o-share").textContent = p.tot ? P(p.paid / p.tot, 0) : "n/a"; $("o-mult").textContent = p.paid ? (p.tot / p.paid).toFixed(1) + "x" : "n/a";
+    var y1 = p.tot - S.setup1 - p.paid;
+    $("o-y1").textContent = "First year of the first plant, set-up included: " + (y1 >= 0 ? "ahead by " + E(y1) : "behind by " + E(-y1) + ", caught up once set-up is paid");
+    var rows = account(S, p);
+    function tr(label, f, cls) { var t = sum(rows.map(f)); return "<tr" + (cls ? ' class="' + cls + '"' : "") + "><td>" + label + "</td>" + rows.map(function (r) { return "<td>" + E(f(r)) + "</td>"; }).join("") + "<td>" + E(t) + "</td></tr>"; }
+    $("o-plan").innerHTML = "<tr><td>Plants on the platform</td>" + rows.map(function (r) { return "<td>" + r.live + "</td>"; }).join("") + "<td></td></tr>" +
+      tr("Gain for the company", function (r) { return r.gain; }) + tr("Paid to Reply, set-up included", function (r) { return r.paid; }) + tr("Net for the company", function (r) { return r.net; }, "total");
+    $("case-note").textContent = CASES[S.caseName].note;
+  }
+  function renderPilot(p) {
+    var c = CASES[S.caseName], used0 = 1 - S.expShare, used1 = 1 - S.expShare * (1 - c.rec);
+    $("p-kpis").innerHTML =
+      '<div class="stat"><span>Solar used on site, today</span><b>' + P(used0, 0) + "</b></div>" +
+      '<div class="stat"><span>Solar used on site, target</span><b>' + P(used1, 0) + "</b></div>" +
+      '<div class="stat"><span>Moved to cheaper hours, per quarter</span><b>' + Math.round(Math.max(0, p.shift - p.rec) / 4) + " MWh</b></div>" +
+      '<div class="stat"><span>Estimated gain over 3 months</span><b>' + E(p.tot / 4) + "</b></div>";
+    var terms = [
+      ["Scope", "One plant, about 3 months. Agents for solar self-consumption and for moving loads to cheaper hours."],
+      ["Before the start", "The plant's current behaviour is recorded as the baseline. The targets on this page are agreed in writing."],
+      ["Price", E(S.pilotFee) + ", at cost."],
+      ["If the targets are met", "The client signs the managed service for that plant. The " + E(S.pilotFee) + " is credited against the " + E(S.setup1) + " set-up."],
+      ["If they are not met", "No obligation for the client. Reply keeps the data for its benchmarks, with the client's consent."],
+      ["What Reply promises", "Best effort and a measured result. No guaranteed saving."],
+      ["After the pilot", E(S.fee) + " per plant per year, plus a bonus of " + P(S.bonus, 0) + " on measured savings, paid only when there are savings. One more plant each year."]
+    ];
+    $("p-terms").innerHTML = terms.map(function (t) { return "<dt>" + esc(t[0]) + "</dt><dd>" + esc(t[1]) + "</dd>"; }).join("");
+  }
+  var SEG = { proj: ["Projects: set-up, integration, co-innovation", "--c-proj"], svc: ["Yearly service and bonus", "--c-svc"], part: ["Partner platform fees", "--c-part"] };
+  function renderReply(p) {
+    var r = plan(S, p), o = r.ours, t = r.today, a = t[2].tot / t[2].people, b = o[2].tot / o[2].people;
+    tween($("r-rpp-old"), a, K); tween($("r-rpp-new"), b, K);
+    $("r-rpp-note").textContent = "From today's way of selling to the two-speed model: " + (b / a).toFixed(1) + " times more per person.";
+    function row(label, x, y) { return "<tr><td>" + label + "</td><td>" + x + '</td><td class="hl">' + y + "</td></tr>"; }
+    $("r-table").innerHTML =
+      row("Revenue over 3 years", M(sum(t.map(function (y) { return y.tot; }))), M(sum(o.map(function (y) { return y.tot; })))) +
+      row("Revenue in year 3", M(t[2].tot), M(o[2].tot)) +
+      row("Recurring share in year 3", P(t[2].rec / t[2].tot, 0), P(o[2].rec / o[2].tot, 0)) +
+      row("Accounts signed in 3 years", r.accToday.toFixed(0), r.accOurs.toFixed(0)) +
+      row("Plants on the platform in year 3", Math.round(t[2].sites), Math.round(o[2].sites)) +
+      row("People needed in year 3", t[2].people.toFixed(1), o[2].people.toFixed(1)) +
+      row("Pilot days given for free over 3 years", r.freeDays.toLocaleString("en-GB"), "0");
+    var W = 640, H = 300, L = 58, B = 56, T = 24, plotH = H - B - T, max = Math.max.apply(null, o.concat(t).map(function (y) { return y.tot; })) || 1;
+    var step = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / step) * step; if (top / step < 3) { step /= 2; top = Math.ceil(max / step) * step; }
+    var y = function (v) { return T + plotH - v / top * plotH; }, svg = "";
+    for (var g = 0; g <= top + 1; g += step) svg += '<line class="grid" x1="' + L + '" x2="' + W + '" y1="' + y(g) + '" y2="' + y(g) + '"/><text x="' + (L - 8) + '" y="' + (y(g) + 4) + '" text-anchor="end">€' + (g / 1e6).toFixed(1) + "M</text>";
+    var gw = (W - L) / 3, bw = 60;
+    [0, 1, 2].forEach(function (i) {
+      var cx = L + gw * i + gw / 2;
+      [[t[i], cx - bw - 6, "Today"], [o[i], cx + 6, "Two-speed"]].forEach(function (bar) {
+        var acc = 0;
+        ["part", "svc", "proj"].forEach(function (k) { var v = bar[0][k]; if (v <= 0) return;
+          svg += '<rect x="' + bar[1] + '" y="' + y(acc + v) + '" width="' + bw + '" height="' + Math.max(0, y(acc) - y(acc + v)) + '" rx="4" fill="var(' + SEG[k][1] + ')" data-tip="' + esc(bar[2] + ", year " + (i + 1) + " · " + SEG[k][0].split(":")[0] + ": " + E(v)) + '"/>'; acc += v; });
+        svg += '<text class="tot" x="' + (bar[1] + bw / 2) + '" y="' + (y(bar[0].tot) - 7) + '" text-anchor="middle">' + M(bar[0].tot) + "</text>";
+        svg += '<text x="' + (bar[1] + bw / 2) + '" y="' + (H - B + 18) + '" text-anchor="middle">' + bar[2] + "</text>";
+      });
+      svg += '<text class="yr" x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle">Year ' + (i + 1) + "</text>";
+    });
+    $("r-chart").innerHTML = svg;
+    $("r-legend").innerHTML = ["proj", "svc", "part"].map(function (k) { return '<div><i style="background:var(' + SEG[k][1] + ')"></i><span>' + SEG[k][0] + "</span></div>"; }).join("");
+  }
+  function render() { var p = plant(S); renderPlant(p); renderPilot(p); renderReply(p); }
+
+  var tip = $("r-tip"), box = tip.parentNode;
+  box.addEventListener("pointermove", function (e) {
+    var t = e.target && e.target.getAttribute && e.target.getAttribute("data-tip");
+    if (!t) { tip.hidden = true; return; }
+    var r = box.getBoundingClientRect(); tip.textContent = t; tip.hidden = false;
+    tip.style.left = Math.min(Math.max(e.clientX - r.left, 90), r.width - 90) + "px"; tip.style.top = (e.clientY - r.top) + "px";
+  });
+  box.addEventListener("pointerleave", function () { tip.hidden = true; });
+
+  document.addEventListener("input", function (e) {
+    var el = e.target;
+    if (el.name === "case") { S.caseName = el.value; render(); return; }
+    var k = el.dataset && el.dataset.k; if (!k) return;
+    var v = parseFloat(el.value); if (isNaN(v)) return;
+    if (el.dataset.scale) v = v / el.dataset.scale;
+    if (el.dataset.i !== undefined) S[k][+el.dataset.i] = v; else S[k] = v;
+    syncInputs(); render();
+  });
+  $("reset").addEventListener("click", function () { S = JSON.parse(JSON.stringify(DEF)); syncInputs(); render(); });
+
+  var VIEWS = ["plant", "pilot", "reply"];
+  function show(v) {
+    if (VIEWS.indexOf(v) < 0) v = "plant";
+    VIEWS.forEach(function (n) { $("view-" + n).hidden = n !== v; $("tab-" + n).setAttribute("aria-selected", n === v ? "true" : "false"); });
+  }
+  document.querySelectorAll(".tabs button").forEach(function (b) { b.addEventListener("click", function () { location.hash = b.dataset.view; show(b.dataset.view); }); });
+  window.addEventListener("hashchange", function () { show(location.hash.slice(1)); });
+
+  syncInputs(); render(); show(location.hash.slice(1));
+})();
+</script>
+
+</body>
+</html>
